@@ -184,21 +184,13 @@
 
         // Attributes
         var speed = [];
-        var X = [];
-        var Y = [];
-        var Z = [];
+        var X = [], Y = [],  Z = [];
         var Size = [];
-        var DeltaY_onX = [];
-        var DeltaX_onY = [];
-        var DeltaX_onZ = [];
-        var DeltaY_onZ = [];
+        var DeltaY_onX = [], DeltaX_onY = [], DeltaX_onZ = [];
         var Shading = [];
-        var checked = 0;
 
         // color jitter
-        var JitterMax = [];
-        var JitterMin = [];
-        var Bright = [];
+        var JitterMax = [], JitterMin = [], Bright = [];
 
         for(var i = 0; i < 3; ++i){
             Speed[i] = document.getElementById(`${idx2name[i]}SpinSpeed`).value;
@@ -208,7 +200,6 @@
             DeltaY_onX[i] = document.getElementById(`${idx2name[i]}_Deltay_x`).value;
             DeltaX_onY[i] = document.getElementById(`${idx2name[i]}_Deltax_y`).value;
             DeltaX_onZ[i] = document.getElementById(`${idx2name[i]}_Deltax_z`).value;
-            DeltaY_onZ[i] = document.getElementById(`${idx2name[i]}_Deltay_z`).value;
             Shading[i] = document.getElementById(`shading${idx2name[i]}`).value;
 
             JitterMax[i] = Number(document.getElementById(`${idx2name[i]}Max`).value);
@@ -227,13 +218,12 @@
 
             all_translate = [X[i], Y[i], Z[i]];
             Size[i] = parseFloat(document.getElementById(`size${idx2name[i]}`).value);
-            var size = [Size[i], Size[i], Size[i]];
             
             var shearMat = mat4.create();
             mat4.set(
                 [1.0, DeltaY_onX[i], 0.0, 0.0,
                 DeltaX_onY[i], 1.0, 0.0, 0.0,
-                DeltaX_onZ[i], DeltaY_onZ[i], 1.0, 0.0,
+                DeltaX_onZ[i], 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0],
                 shearMat
             )
@@ -244,14 +234,14 @@
             mat4.multiply(shearMat, mvMatrix, mvMatrix);
             mat4.translate(mvMatrix, all_translate);
             mat4.rotate(mvMatrix, degToRad(Angle[i]), [0, 1, 0]);
-            mat4.scale(mvMatrix, size);
+            mat4.scale(mvMatrix, [Size[i], Size[i], Size[i]]);
 
             // Setup Normal Matrix
             mat4.identity(nmMatrix);
             mat4.translate(nmMatrix, all_translate);
             mat4.multiply(shearMat,nmMatrix, nmMatrix);
             mat4.rotate(nmMatrix, degToRad(Angle[i]), [0, 1, 0]);
-            mat4.scale(nmMatrix, size);
+            mat4.scale(nmMatrix, [Size[i], Size[i], Size[i]]);
             mat4.inverse(nmMatrix, nmMatrix);
             mat4.transpose(nmMatrix, nmMatrix);
 
@@ -260,16 +250,16 @@
 
             setMatrixUniforms();
 
-            // Setup teapot position data
+            // Setup position data
             gl.bindBuffer(gl.ARRAY_BUFFER, VertexPositionBuffer[i]);
             gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, 
-                                    VertexPositionBuffer[i].itemSize, 
+                                VertexPositionBuffer[i].itemSize, 
                                 gl.FLOAT, 
                                 false, 
                                 0, 
                                 0);
 
-            // Setup teapot front color data
+            // Setup front color data
             gl.bindBuffer(gl.ARRAY_BUFFER, VertexFrontColorBuffer[i]);
             gl.vertexAttribPointer(shaderProgram.vertexFrontColorAttribute, 
                                 VertexFrontColorBuffer[i].itemSize, 
@@ -278,7 +268,7 @@
                                 0, 
                                 0);
 
-            // Setup teapot vertex normal data
+            // Setup vertex normal data
             gl.bindBuffer(gl.ARRAY_BUFFER, VertexNormalBuffer[i]);
             gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, 
                                 VertexNormalBuffer[i].itemSize, 
@@ -301,7 +291,6 @@
                 Angle[i] += Speed[i] * elapsed / 100;
             }
         }
-        
         lastTime = timeNow;
     }
 
@@ -471,52 +460,37 @@
         <tr>
             <td class="name">Shear Along X-Axis</td>
             <td class="value">
-                <label for="left_Deltay_x">Delta Y:</label>
-                <input type="number" id="left_Deltay_x" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <input type="range" id="left_Deltay_x" name="quantity" min="-3" max="3" value="0" step="0.2">
             </td>
             <td class="value">
-                <label for="mid_Deltay_x">Delta Y:</label>
-                <input type="number" id="mid_Deltay_x" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <input type="range" id="mid_Deltay_x" name="quantity" min="-3" max="3" value="0" step="0.2">
             </td>
             <td class="value">
-                <label for="right_Deltay_x">Delta Y:</label>
-                <input type="number" id="right_Deltay_x" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <input type="range" id="right_Deltay_x" name="quantity" min="-3" max="3" value="0" step="0.2">
             </td>
         </tr>
         <tr>
             <td class="name">Shear Along Y-Axis</td>
             <td class="value">
-                <label for="left_Deltax_y">Delta X:</label>
-                <input type="number" id="left_Deltax_y" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <input type="range" id="left_Deltax_y" name="quantity" min="-3" max="3" value="0" step="0.2">
             </td>
             <td class="value">
-                <label for="mid_Deltax_y">Delta X:</label>
-                <input type="number" id="mid_Deltax_y" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <input type="range" id="mid_Deltax_y" name="quantity" min="-3" max="3" value="0" step="0.2">
             </td>
             <td class="value">
-                <label for="right_Deltax_y">Delta X:</label>
-                <input type="number" id="right_Deltax_y" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <input type="range" id="right_Deltax_y" name="quantity" min="-3" max="3" value="0" step="0.2">
             </td>
         </tr>
         <tr>
             <td class="name">Shear Along Z-Axis</td>
             <td class="value">
-                <label for="left_Deltax_z">Delta X:</label>
-                <input type="number" id="left_Deltax_z" name="quantity" min="-3" max="3" value="0" step="0.2">
-                <label for="left_Deltay_z">Delta Y:</label>
-                <input type="number" id="left_Deltay_z" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <input type="range" id="left_Deltax_z" name="quantity" min="-3" max="3" value="0" step="0.2">
             </td>
             <td class="value">
-                <label for="mid_Deltax_z">Delta X:</label>
-                <input type="number" id="mid_Deltax_z" name="quantity" min="-3" max="3" value="0" step="0.2">
-                <label for="mid_Deltay_z">Delta Y:</label>
-                <input type="number" id="mid_Deltay_z" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <input type="range" id="mid_Deltax_z" name="quantity" min="-3" max="3" value="0" step="0.2">
             </td>
             <td class="value">
-                <label for="right_Deltax_z">Delta X:</label>
-                <input type="number" id="right_Deltax_z" name="quantity" min="-3" max="3" value="0" step="0.2">
-                <label for="right_Deltay_z">Delta Y:</label>
-                <input type="number" id="right_Deltay_z" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <input type="range" id="right_Deltax_z" name="quantity" min="-3" max="3" value="0" step="0.2">
             </td>
         </tr>
         <tr>

@@ -46,7 +46,7 @@ void main(void) {
     kd = k[1]; // diffuse
     ks = k[2]; // specular
 
-    // gouraud shading
+    // gouraud shading || flat shading
     if(mode == 1 || mode == 3){
         mat3 normalMVMatrix = mat3(uMVMatrix);
         vec3 mvNormal = normalMVMatrix * aVertexNormal;
