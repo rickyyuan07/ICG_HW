@@ -16,26 +16,16 @@
     var pMatrix  = mat4.create();
     var nmMatrix  = mat4.create();
 
-    var midVertexPositionBuffer;
-    var midVertexNormalBuffer;
-    var midVertexFrontColorBuffer;
-
-    var leftVertexPositionBuffer;
-    var leftVertexNormalBuffer;
-    var leftVertexFrontColorBuffer;
-
-    var rightVertexPositionBuffer;
-    var rightVertexNormalBuffer;
-    var rightVertexFrontColorBuffer;
+    var VertexPositionBuffer = [];
+    var VertexNormalBuffer = [];
+    var VertexFrontColorBuffer = [];
 
     var brightnessRatio = 1.0;
-    var leftAngle = 180;
-    var midAngle = 180;
-    var rightAngle = 180;
-    var lastTime    = 0;
-    var leftSpeed = 0;
-    var midSpeed = 0;
-    var rightSpeed = 0;
+    var Angle = [180, 180, 180];
+    var lastTime = 0;
+    var Speed = [0, 0, 0]
+
+    var idx2name = ["mid", "right", "left"];
     
     function initGL(canvas) {
         try {
@@ -123,90 +113,50 @@
         return degrees * Math.PI / 180;
     }
 
-    function handleLoadedMid(objectData) {
-        midVertexPositionBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, midVertexPositionBuffer);
+    function handleLoaded(objectData, idx) { // [mid, right, left]
+        VertexPositionBuffer[idx] = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, VertexPositionBuffer[idx]);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(objectData.vertexPositions), gl.STATIC_DRAW);
-        midVertexPositionBuffer.itemSize = 3;
-        midVertexPositionBuffer.numItems = objectData.vertexPositions.length / 3;
+        VertexPositionBuffer[idx].itemSize = 3;
+        VertexPositionBuffer[idx].numItems = objectData.vertexPositions.length / 3;
 
-        midVertexNormalBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, midVertexNormalBuffer);
+        VertexNormalBuffer[idx] = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, VertexNormalBuffer[idx]);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(objectData.vertexNormals), gl.STATIC_DRAW);
-        midVertexNormalBuffer.itemSize = 3;
-        midVertexNormalBuffer.numItems = objectData.vertexNormals.length / 3;
+        VertexNormalBuffer[idx].itemSize = 3;
+        VertexNormalBuffer[idx].numItems = objectData.vertexNormals.length / 3;
 
-        midVertexFrontColorBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, midVertexFrontColorBuffer);
+        VertexFrontColorBuffer[idx] = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, VertexFrontColorBuffer[idx]);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(objectData.vertexFrontcolors), gl.STATIC_DRAW);
-        midVertexFrontColorBuffer.itemSize = 3;
-        midVertexFrontColorBuffer.numItems = objectData.vertexFrontcolors.length / 3;
-    }
-
-    function handleLoadedLeft(objectData) {
-        leftVertexPositionBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, leftVertexPositionBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(objectData.vertexPositions), gl.STATIC_DRAW);
-        leftVertexPositionBuffer.itemSize = 3;
-        leftVertexPositionBuffer.numItems = objectData.vertexPositions.length / 3;
-
-        leftVertexNormalBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, leftVertexNormalBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(objectData.vertexNormals), gl.STATIC_DRAW);
-        leftVertexNormalBuffer.itemSize = 3;
-        leftVertexNormalBuffer.numItems = objectData.vertexNormals.length / 3;
-
-        leftVertexFrontColorBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, leftVertexFrontColorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(objectData.vertexFrontcolors), gl.STATIC_DRAW);
-        leftVertexFrontColorBuffer.itemSize = 3;
-        leftVertexFrontColorBuffer.numItems = objectData.vertexFrontcolors.length / 3;
-    }
-
-    function handleLoadedRight(objectData) {
-        rightVertexPositionBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, rightVertexPositionBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(objectData.vertexPositions), gl.STATIC_DRAW);
-        rightVertexPositionBuffer.itemSize = 3;
-        rightVertexPositionBuffer.numItems = objectData.vertexPositions.length / 3;
-
-        rightVertexNormalBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, rightVertexNormalBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(objectData.vertexNormals), gl.STATIC_DRAW);
-        rightVertexNormalBuffer.itemSize = 3;
-        rightVertexNormalBuffer.numItems = objectData.vertexNormals.length / 3;
-
-        rightVertexFrontColorBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, rightVertexFrontColorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(objectData.vertexFrontcolors), gl.STATIC_DRAW);
-        rightVertexFrontColorBuffer.itemSize = 3;
-        rightVertexFrontColorBuffer.numItems = objectData.vertexFrontcolors.length / 3;
+        VertexFrontColorBuffer[idx].itemSize = 3;
+        VertexFrontColorBuffer[idx].numItems = objectData.vertexFrontcolors.length / 3;
     }
 
     function loadObjects() {
         var request = new XMLHttpRequest();
-        request.open("GET", `./model/${document.getElementById("itemMid").value}.json`);
+        request.open("GET", `./model/${document.getElementById("itemmid").value}.json`);
         request.onreadystatechange = function () {
             if (request.readyState == 4) {
-                handleLoadedMid(JSON.parse(request.responseText));
+                handleLoaded(JSON.parse(request.responseText), 0);
             }
         }
         request.send();
 
         var request1 = new XMLHttpRequest();
-        request1.open("GET", `./model/${document.getElementById("itemRight").value}.json`);
+        request1.open("GET", `./model/${document.getElementById("itemright").value}.json`);
         request1.onreadystatechange = function () {
             if (request1.readyState == 4) {
-                handleLoadedRight(JSON.parse(request1.responseText));
+                handleLoaded(JSON.parse(request1.responseText), 1);
             }
         }
         request1.send();
 
         var request2 = new XMLHttpRequest();
-        request2.open("GET", `./model/${document.getElementById("itemLeft").value}.json`);
+        request2.open("GET", `./model/${document.getElementById("itemleft").value}.json`);
         request2.onreadystatechange = function () {
             if (request2.readyState == 4) {
-                handleLoadedLeft(JSON.parse(request2.responseText));
+                handleLoaded(JSON.parse(request2.responseText), 2);
             }
         }
         request2.send();
@@ -221,302 +171,124 @@
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        if (midVertexPositionBuffer   == null || 
-            midVertexNormalBuffer     == null || 
-            midVertexFrontColorBuffer == null ||
-            leftVertexPositionBuffer   == null || 
-            leftVertexNormalBuffer     == null || 
-            leftVertexFrontColorBuffer == null ||
-            rightVertexPositionBuffer   == null || 
-            rightVertexNormalBuffer     == null || 
-            rightVertexFrontColorBuffer == null) {
-            return;
+        for(var i = 0; i < 3; ++i){
+            if (VertexPositionBuffer[i]   == null || 
+                VertexNormalBuffer[i]     == null || 
+                VertexFrontColorBuffer[i] == null) {
+                return;
+            }
         }
         
         // Setup Projection Matrix
         mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
 
         // Attributes
-        leftSpeed = document.getElementById("leftSpinSpeed").value;
-        midSpeed = document.getElementById("midSpinSpeed").value;
-        rightSpeed = document.getElementById("rightSpinSpeed").value;
-        var midX = document.getElementById("midX");
-        var midY = document.getElementById("midY");
-        var midZ = document.getElementById("midZ");
-        var lambdaY_onX = document.getElementById("mid_lambday_x").value;
-        var lambdaZ_onX = 0;
-        var lambdaX_onY = document.getElementById("mid_lambdax_y").value;
-        var lambdaZ_onY = 0;
-        var lambdaX_onZ = document.getElementById("mid_lambdax_z").value;
-        var lambdaY_onZ = document.getElementById("mid_lambday_z").value;
+        var speed = [];
+        var X = [];
+        var Y = [];
+        var Z = [];
+        var Size = [];
+        var lambdaY_onX = [];
+        var lambdaX_onY = [];
+        var lambdaX_onZ = [];
+        var lambdaY_onZ = [];
+        var Shading = [];
         var checked = 0;
-        var midShading = document.getElementById('shadingMid').value;
-        var MaxLeft = Number(document.getElementById("LeftMax").value);
-        var MinLeft = Number(document.getElementById("LeftMin").value);
-        var MaxMid = Number(document.getElementById("MidMax").value);
-        var MinMid = Number(document.getElementById("MidMin").value);
-        var MaxRight = Number(document.getElementById("RightMax").value);
-        var MinRight = Number(document.getElementById("RightMin").value);
 
-        MaxLeft = Math.max(Math.min(MaxLeft, 1.0), 0.0);
-        MaxMid = Math.max(Math.min(MaxMid, 1.0), 0.0);
-        MaxRight = Math.max(Math.min(MaxRight, 1.0), 0.0);
-        MinLeft = Math.max(Math.min(MinLeft, MaxLeft), 0.0);
-        MinMid = Math.max(Math.min(MinMid, MaxMid), 0.0);
-        MinRight = Math.max(Math.min(MinRight, MaxRight), 0.0);
+        // color jitter
+        var JitterMax = [];
+        var JitterMin = [];
+        var Bright = [];
 
-        var leftBright = MinLeft + brightnessRatio * (MaxLeft - MinLeft);
-        var midBright = MinMid + brightnessRatio * (MaxMid - MinMid);
-        var rightBright = MinRight + brightnessRatio * (MaxRight - MinRight);
+        for(var i = 0; i < 3; ++i){
+            Speed[i] = document.getElementById(`${idx2name[i]}SpinSpeed`).value;
+            X[i] = document.getElementById(`${idx2name[i]}X`).value;
+            Y[i] = document.getElementById(`${idx2name[i]}Y`).value;
+            Z[i] = document.getElementById(`${idx2name[i]}Z`).value;
+            lambdaY_onX[i] = document.getElementById(`${idx2name[i]}_lambday_x`).value;
+            lambdaX_onY[i] = document.getElementById(`${idx2name[i]}_lambdax_y`).value;
+            lambdaX_onZ[i] = document.getElementById(`${idx2name[i]}_lambdax_z`).value;
+            lambdaY_onZ[i] = document.getElementById(`${idx2name[i]}_lambday_z`).value;
+            Shading[i] = document.getElementById(`shading${idx2name[i]}`).value;
 
-        gl.uniform3f(shaderProgram.light_pos1,
-                    document.getElementById("First_x").value,
-                    document.getElementById("First_y").value,
-                    document.getElementById("First_z").value);
-        gl.uniform3f(shaderProgram.light_col1,
-                    document.getElementById("First_r").value * leftBright,
-                    document.getElementById("First_g").value * leftBright,
-                    document.getElementById("First_b").value * leftBright);
-        gl.uniform3f(shaderProgram.light_pos2,
-                    document.getElementById("Second_x").value,
-                    document.getElementById("Second_y").value,
-                    document.getElementById("Second_z").value);
-        gl.uniform3f(shaderProgram.light_col2,
-                    document.getElementById("Second_r").value * midBright,
-                    document.getElementById("Second_g").value * midBright,
-                    document.getElementById("Second_b").value * midBright);
-        gl.uniform3f(shaderProgram.light_pos3,
-                    document.getElementById("Third_x").value,
-                    document.getElementById("Third_y").value,
-                    document.getElementById("Third_z").value);
-        gl.uniform3f(shaderProgram.light_col3,
-                    document.getElementById("Third_r").value * rightBright,
-                    document.getElementById("Third_g").value * rightBright,
-                    document.getElementById("Third_b").value * rightBright);
+            JitterMax[i] = Number(document.getElementById(`${idx2name[i]}Max`).value);
+            JitterMin[i] = Number(document.getElementById(`${idx2name[i]}Min`).value);
 
-        all_translate = [midX.value, midY.value, midZ.value]
-        var size = [1, 1, 1];
-        size[0] = parseFloat(document.getElementById("sizeMid").value);
-        size[1] = parseFloat(document.getElementById("sizeMid").value);
-        size[2] = parseFloat(document.getElementById("sizeMid").value);
-        
-        var shearMat = mat4.create();
-        mat4.set(
-            [1.0, lambdaY_onX, lambdaZ_onX, 0.0,
-            lambdaX_onY, 1.0, lambdaZ_onY, 0.0,
-            lambdaX_onZ, lambdaY_onZ, 1.0, 0.0,
-            0.0, 0.0, 0.0, 1.0],
-            shearMat
-        )
-        mat4.transpose(shearMat, shearMat);
-        
-        // Setup Model-View Matrix
-        mat4.identity(mvMatrix);
-        mat4.multiply(shearMat, mvMatrix, mvMatrix);
-        mat4.translate(mvMatrix, all_translate);
-        mat4.rotate(mvMatrix, degToRad(midAngle), [0, 1, 0]);
-        mat4.scale(mvMatrix, size);
+            Bright[i] = JitterMin[i] + brightnessRatio * (JitterMax[i] - JitterMin[i]);
 
-        // Setup Normal Matrix
-        mat4.identity(nmMatrix);
-        mat4.translate(nmMatrix, all_translate);
-        mat4.multiply(shearMat,nmMatrix, nmMatrix);
-        mat4.rotate(nmMatrix, degToRad(midAngle), [0, 1, 0]);
-        mat4.scale(nmMatrix, size);
-        mat4.inverse(nmMatrix, nmMatrix);
-        mat4.transpose(nmMatrix, nmMatrix);
+            gl.uniform3f(shaderProgram[`light_pos${i+1}`],
+                        document.getElementById(`${idx2name[i]}_x`).value,
+                        document.getElementById(`${idx2name[i]}_y`).value,
+                        document.getElementById(`${idx2name[i]}_z`).value);
+            gl.uniform3f(shaderProgram[`light_col${i+1}`],
+                        document.getElementById(`${idx2name[i]}_r`).value * Bright[i],
+                        document.getElementById(`${idx2name[i]}_g`).value * Bright[i],
+                        document.getElementById(`${idx2name[i]}_b`).value * Bright[i]);
 
-        gl.uniform1i(shaderProgram.shadeMode, midShading); // 1: gouraud, 2: phong, 3: flat, 4: cel
-        gl.uniform3f(shaderProgram.k, 0.14, 0.2, 0.66);
-        // gl.uniform3f(shaderProgram.k, 0.1, 0.6, 0.3);
+            all_translate = [X[i], Y[i], Z[i]];
+            Size[i] = parseFloat(document.getElementById(`size${idx2name[i]}`).value);
+            var size = [Size[i], Size[i], Size[i]];
+            
+            var shearMat = mat4.create();
+            mat4.set(
+                [1.0, lambdaY_onX[i], 0.0, 0.0,
+                lambdaX_onY[i], 1.0, 0.0, 0.0,
+                lambdaX_onZ[i], lambdaY_onZ[i], 1.0, 0.0,
+                0.0, 0.0, 0.0, 1.0],
+                shearMat
+            )
+            mat4.transpose(shearMat, shearMat);
+            
+            // Setup Model-View Matrix
+            mat4.identity(mvMatrix);
+            mat4.multiply(shearMat, mvMatrix, mvMatrix);
+            mat4.translate(mvMatrix, all_translate);
+            mat4.rotate(mvMatrix, degToRad(Angle[i]), [0, 1, 0]);
+            mat4.scale(mvMatrix, size);
 
-        setMatrixUniforms();
+            // Setup Normal Matrix
+            mat4.identity(nmMatrix);
+            mat4.translate(nmMatrix, all_translate);
+            mat4.multiply(shearMat,nmMatrix, nmMatrix);
+            mat4.rotate(nmMatrix, degToRad(Angle[i]), [0, 1, 0]);
+            mat4.scale(nmMatrix, size);
+            mat4.inverse(nmMatrix, nmMatrix);
+            mat4.transpose(nmMatrix, nmMatrix);
 
-        // Setup teapot position data
-        gl.bindBuffer(gl.ARRAY_BUFFER, midVertexPositionBuffer);
-        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, 
-                                midVertexPositionBuffer.itemSize, 
-                               gl.FLOAT, 
-                               false, 
-                               0, 
-                               0);
+            gl.uniform1i(shaderProgram.shadeMode, Shading[i]); // 1: gouraud, 2: phong, 3: flat, 4: cel
+            gl.uniform3f(shaderProgram.k, 0.14, 0.2, 0.66);
 
-        // Setup teapot front color data
-        gl.bindBuffer(gl.ARRAY_BUFFER, midVertexFrontColorBuffer);
-        gl.vertexAttribPointer(shaderProgram.vertexFrontColorAttribute, 
-                               midVertexFrontColorBuffer.itemSize, 
-                               gl.FLOAT, 
-                               false, 
-                               0, 
-                               0);
+            setMatrixUniforms();
 
-        // Setup teapot vertex normal data
-        gl.bindBuffer(gl.ARRAY_BUFFER, midVertexNormalBuffer);
-        gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, 
-                            midVertexNormalBuffer.itemSize, 
-                            gl.FLOAT,
-                            false,
-                            0,
-                            0);
+            // Setup teapot position data
+            gl.bindBuffer(gl.ARRAY_BUFFER, VertexPositionBuffer[i]);
+            gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, 
+                                    VertexPositionBuffer[i].itemSize, 
+                                gl.FLOAT, 
+                                false, 
+                                0, 
+                                0);
 
-        gl.drawArrays(gl.TRIANGLES, 0, midVertexPositionBuffer.numItems);
-        // Attributes
-        var lambdaY_onX = document.getElementById("right_lambday_x").value;
-        var lambdaZ_onX = 0;
-        var lambdaX_onY = document.getElementById("right_lambdax_y").value;
-        var lambdaZ_onY = 0;
-        var lambdaX_onZ = document.getElementById("right_lambdax_z").value;
-        var lambdaY_onZ = document.getElementById("right_lambday_z").value;
-        mat4.set(
-            [1.0, lambdaY_onX, lambdaZ_onX, 0.0,
-            lambdaX_onY, 1.0, lambdaZ_onY, 0.0,
-            lambdaX_onZ, lambdaY_onZ, 1.0, 0.0,
-            0.0, 0.0, 0.0, 1.0],
-            shearMat
-        )
-        mat4.transpose(shearMat, shearMat);
+            // Setup teapot front color data
+            gl.bindBuffer(gl.ARRAY_BUFFER, VertexFrontColorBuffer[i]);
+            gl.vertexAttribPointer(shaderProgram.vertexFrontColorAttribute, 
+                                VertexFrontColorBuffer[i].itemSize, 
+                                gl.FLOAT, 
+                                false, 
+                                0, 
+                                0);
 
-        var rightX = document.getElementById("rightX");
-        var rightY = document.getElementById("rightY");
-        var rightZ = document.getElementById("rightZ");
-        var rightShading = document.getElementById('shadingRight').value;
+            // Setup teapot vertex normal data
+            gl.bindBuffer(gl.ARRAY_BUFFER, VertexNormalBuffer[i]);
+            gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, 
+                                VertexNormalBuffer[i].itemSize, 
+                                gl.FLOAT,
+                                false,
+                                0,
+                                0);
 
-        all_translate = [rightX.value, rightY.value, rightZ.value]
-        size[0] = parseFloat(document.getElementById("sizeRight").value)
-        size[1] = parseFloat(document.getElementById("sizeRight").value)
-        size[2] = parseFloat(document.getElementById("sizeRight").value)
-
-        // Setup Model-View Matrix
-        mat4.identity(mvMatrix);
-        mat4.multiply(shearMat, mvMatrix, mvMatrix);
-        mat4.translate(mvMatrix, all_translate);
-        mat4.rotate(mvMatrix, degToRad(rightAngle), [0, 1, 0]);
-        mat4.rotate(mvMatrix, -0.3, [0,1,0]);
-        mat4.rotate(mvMatrix, -1.5, [1,0,0]);
-        mat4.scale(mvMatrix, size);
-
-        // Setup Normal Matrix
-        mat4.identity(nmMatrix);
-        mat4.multiply(shearMat, nmMatrix, nmMatrix);
-        mat4.translate(nmMatrix, all_translate);
-        mat4.rotate(nmMatrix, degToRad(rightAngle), [0, 1, 0]);
-        mat4.rotate(nmMatrix, -0.3, [0,1,0]);
-        mat4.rotate(nmMatrix, -1.5, [1,0,0]);
-        mat4.scale(nmMatrix, size);
-        mat4.inverse(nmMatrix, nmMatrix);
-        mat4.transpose(nmMatrix, nmMatrix);
-
-        gl.uniform1i(shaderProgram.shadeMode, rightShading); // 1: gouraud, 2: phong, 3: flat, 4: cel
-        gl.uniform3f(shaderProgram.k, 0.14, 0.2, 0.66);
-
-        // Setup teapot position data
-        gl.bindBuffer(gl.ARRAY_BUFFER, rightVertexPositionBuffer);
-        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, 
-                            rightVertexPositionBuffer.itemSize, 
-                            gl.FLOAT, 
-                            false, 
-                            0, 
-                            0);
-
-        // Setup teapot front color data
-        gl.bindBuffer(gl.ARRAY_BUFFER, rightVertexFrontColorBuffer);
-        gl.vertexAttribPointer(shaderProgram.vertexFrontColorAttribute, 
-                            rightVertexFrontColorBuffer.itemSize, 
-                            gl.FLOAT, 
-                            false, 
-                            0, 
-                            0);
-
-        // Setup teapot vertex normal data
-        gl.bindBuffer(gl.ARRAY_BUFFER, rightVertexNormalBuffer);
-        gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, 
-                            rightVertexNormalBuffer.itemSize, 
-                            gl.FLOAT,
-                            false,
-                            0,
-                            0);
-
-        setMatrixUniforms();
-        gl.drawArrays(gl.TRIANGLES, 0, rightVertexPositionBuffer.numItems);
-
-        // Attributes
-        var lambdaY_onX = document.getElementById("left_lambday_x").value;
-        var lambdaZ_onX = 0;
-        var lambdaX_onY = document.getElementById("left_lambdax_y").value;
-        var lambdaZ_onY = 0;
-        var lambdaX_onZ = document.getElementById("left_lambdax_z").value;
-        var lambdaY_onZ = document.getElementById("left_lambday_z").value;
-        mat4.set(
-            [1.0, lambdaY_onX, lambdaZ_onX, 0.0,
-            lambdaX_onY, 1.0, lambdaZ_onY, 0.0,
-            lambdaX_onZ, lambdaY_onZ, 1.0, 0.0,
-            0.0, 0.0, 0.0, 1.0],
-            shearMat
-        )
-        mat4.transpose(shearMat, shearMat);
-
-        var leftX = document.getElementById("leftX");
-        var leftY = document.getElementById("leftY");
-        var leftZ = document.getElementById("leftZ");
-        var leftShading = document.getElementById('shadingLeft').value;
-        
-        all_translate = [leftX.value, leftY.value, leftZ.value]
-        size[0] = parseFloat(document.getElementById("sizeLeft").value);
-        size[1] = parseFloat(document.getElementById("sizeLeft").value);
-        size[2] = parseFloat(document.getElementById("sizeLeft").value);
-
-        // Setup Model-View Matrix
-        mat4.identity(mvMatrix);
-        mat4.multiply(shearMat, mvMatrix, mvMatrix);
-        mat4.translate(mvMatrix, all_translate);
-        mat4.rotate(mvMatrix, degToRad(leftAngle), [0, 1, 0]);
-        mat4.translate(mvMatrix, [-6, 0, 5]);
-        mat4.rotate(mvMatrix, -1.57, [1,0,0]);
-        mat4.scale(mvMatrix, size);
-
-        // Setup Normal Matrix
-        mat4.identity(nmMatrix);
-        mat4.multiply(shearMat, nmMatrix, nmMatrix);
-        mat4.translate(nmMatrix, all_translate);
-        mat4.rotate(nmMatrix, degToRad(leftAngle), [0, 1, 0]);
-        mat4.translate(nmMatrix, [-6, 0, 5]);
-        mat4.rotate(nmMatrix, -1.57, [1,0,0]);
-        mat4.scale(nmMatrix, size);
-        mat4.inverse(nmMatrix, nmMatrix);
-        mat4.transpose(nmMatrix, nmMatrix);
-
-        gl.uniform1i(shaderProgram.shadeMode, leftShading); // 1: gouraud, 2: phong, 3: flat, 4: cel
-        gl.uniform3f(shaderProgram.k, 0.14, 0.2, 0.66);
-
-        // Setup teapot position data
-        gl.bindBuffer(gl.ARRAY_BUFFER, leftVertexPositionBuffer);
-        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, 
-                            leftVertexPositionBuffer.itemSize, 
-                            gl.FLOAT, 
-                            false, 
-                            0, 
-                            0);
-
-        // Setup teapot front color data
-        gl.bindBuffer(gl.ARRAY_BUFFER, leftVertexFrontColorBuffer);
-        gl.vertexAttribPointer(shaderProgram.vertexFrontColorAttribute, 
-                            leftVertexFrontColorBuffer.itemSize, 
-                            gl.FLOAT, 
-                            false, 
-                            0, 
-                            0);
-
-        // Setup teapot vertex normal data
-        gl.bindBuffer(gl.ARRAY_BUFFER, leftVertexNormalBuffer);
-        gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, 
-                            leftVertexNormalBuffer.itemSize, 
-                            gl.FLOAT,
-                            false,
-                            0,
-                            0);
-
-        setMatrixUniforms();
-        gl.drawArrays(gl.TRIANGLES, 0, leftVertexPositionBuffer.numItems);
+            gl.drawArrays(gl.TRIANGLES, 0, VertexPositionBuffer[i].numItems);
+        }
     }
 
     function animate() {
@@ -525,30 +297,16 @@
         if (lastTime != 0) {
             brightnessRatio = Math.abs((timeNow%(jitterPeriod * 1000) - (jitterPeriod * 500)) / (jitterPeriod * 500))
             var elapsed = timeNow - lastTime;
-            var dir = document.getElementsByName('rightDir');
-            for(i = 0; i < dir.length; i++) {
-                if(dir[i].type="radio") {
-                    if(dir[i].checked)
-                        checked = dir[i].value;
+            for(var i = 0; i < 3; ++i){
+                var dir = document.getElementsByName(`${idx2name[i]}Dir`);
+                for(j = 0; j < dir.length; j++) {
+                    if(dir[j].type="radio") {
+                        if(dir[j].checked)
+                            checked = dir[j].value;
+                    }
                 }
+                Angle[i] += checked * Speed[i] * elapsed / 100;
             }
-            rightAngle += checked * rightSpeed * elapsed / 100;
-            dir = document.getElementsByName('midDir');
-            for(i = 0; i < dir.length; i++) {
-                if(dir[i].type="radio") {
-                    if(dir[i].checked)
-                        checked = dir[i].value;
-                }
-            }
-            midAngle += checked * midSpeed * elapsed / 100;
-            dir = document.getElementsByName('leftDir');
-            for(i = 0; i < dir.length; i++) {
-                if(dir[i].type="radio") {
-                    if(dir[i].checked)
-                        checked = dir[i].value;
-                }
-            }
-            leftAngle += checked * leftSpeed * elapsed / 100;
         }
         
         lastTime = timeNow;
@@ -588,7 +346,7 @@
         <tr>
             <td class="name">Item</td>
             <td class="name">
-                <select name="itemLeft" id="itemLeft" onchange="loadObjects()">
+                <select name="itemleft" id="itemleft" onchange="loadObjects()">
                   <option value="Car_road">Car_road</option>
                   <option value="Church_s">Church_s</option>
                   <option value="Csie">Csie</option>
@@ -605,7 +363,7 @@
                 </select>
             </td>
             <td class="name">
-                <select name="itemMid" id="itemMid" onchange="loadObjects()">
+                <select name="itemmid" id="itemmid" onchange="loadObjects()">
                     <option value="Car_road">Car_road</option>
                     <option value="Church_s">Church_s</option>
                     <option value="Csie">Csie</option>
@@ -622,7 +380,7 @@
                 </select>
             </td>
             <td class="name">
-                <select name="itemRight" id="itemRight" onchange="loadObjects()">
+                <select name="itemright" id="itemright" onchange="loadObjects()">
                     <option value="Car_road">Car_road</option>
                     <option value="Church_s">Church_s</option>
                     <option value="Csie">Csie</option>
@@ -642,7 +400,7 @@
         <tr>
             <td class="name">Shading Model</td>
             <td class="value radios">
-                <select name="shadingLeft" id="shadingLeft">
+                <select name="shadingleft" id="shadingleft">
                   <option value="1">Gouraud Shading</option>
                   <option value="2">Phong Shading</option>
                   <option value="3">Flat Shading</option>
@@ -650,7 +408,7 @@
                 </select>
             </td>
             <td class="value radios">
-                <select name="shadingMid" id="shadingMid">
+                <select name="shadingmid" id="shadingmid">
                   <option value="1">Gouraud Shading</option>
                   <option value="2">Phong Shading</option>
                   <option value="3">Flat Shading</option>
@@ -658,7 +416,7 @@
                 </select>
             </td>
             <td class="value radios">
-                <select name="shadingRight" id="shadingRight">
+                <select name="shadingright" id="shadingright">
                   <option value="1">Gouraud Shading</option>
                   <option value="2">Phong Shading</option>
                   <option value="3">Flat Shading</option>
@@ -705,13 +463,13 @@
         <tr>
             <td class="name">Size</td>
             <td class="value">
-                <input type="range" id="sizeLeft" min="0" max="10" value="1" class="obj_controller" step="0.1">
+                <input type="range" id="sizeleft" min="0" max="10" value="1" class="obj_controller" step="0.1">
             </td>
             <td class="value">
-                <input type="range" id="sizeMid" min="0" max="10" value="1" class="obj_controller" step="0.1">
+                <input type="range" id="sizemid" min="0" max="10" value="1" class="obj_controller" step="0.1">
             </td>
             <td class="value">
-                <input type="range" id="sizeRight" min="0" max="10" value="1" class="obj_controller" step="0.1">
+                <input type="range" id="sizeright" min="0" max="10" value="1" class="obj_controller" step="0.1">
             </td>
         </tr>
         <tr>
@@ -781,22 +539,22 @@
             <td class="name">Rotate Direction</td>
             <td class="value radios">
                 <div>
-                    <input type="radio" id="clocLeft" name="leftDir" value="-1" class="table_radio">
-                    <label for="clocLeft">Clockwise</label>
+                    <input type="radio" id="clocleft" name="leftDir" value="-1" class="table_radio">
+                    <label for="clocleft">Clockwise</label>
                 </div>
                 <div>
-                    <input type="radio" id="counterLeft" name="leftDir" value="1" checked class="table_radio">
-                    <label for="counterLeft">Counterclockwise</label>
+                    <input type="radio" id="counterleft" name="leftDir" value="1" checked class="table_radio">
+                    <label for="counterleft">Counterclockwise</label>
                 </div>
             </td>
             <td class="value radios">
                 <div>
-                    <input type="radio" id="clockMid" name="midDir" value="-1" class="table_radio">
-                    <label for="clockMid">Clockwise</label>
+                    <input type="radio" id="clockmid" name="midDir" value="-1" class="table_radio">
+                    <label for="clockmid">Clockwise</label>
                 </div>
                 <div>
-                    <input type="radio" id="counterMid" name="midDir" value="1" checked class="table_radio">
-                    <label for="counterMid">Counterclockwise</label>
+                    <input type="radio" id="countermid" name="midDir" value="1" checked class="table_radio">
+                    <label for="countermid">Counterclockwise</label>
                 </div>
             </td>
             <td class="value radios">
@@ -821,76 +579,76 @@
         <tr>
             <td class="name">Position</td>
             <td class="value">
-                <label for="First_x">X:</label>
-                <input type="text" id="First_x" value="0"></br>
-                <label for="First_y">Y:</label>
-                <input type="text" id="First_y" value="0"></br>
-                <label for="First_z">Z:</label>
-                <input type="text" id="First_z" value="-30">
+                <label for="left_x">X:</label>
+                <input type="text" id="left_x" value="0"></br>
+                <label for="left_y">Y:</label>
+                <input type="text" id="left_y" value="0"></br>
+                <label for="left_z">Z:</label>
+                <input type="text" id="left_z" value="-30">
             </td>
             <td class="value">
-                <label for="Second_x">X:</label>
-                <input type="text" id="Second_x" value="0"></br>
-                <label for="Second_y">Y:</label>
-                <input type="text" id="Second_y" value="30"></br>
-                <label for="Second_z">Z:</label>
-                <input type="text" id="Second_z" value="0">
+                <label for="mid_x">X:</label>
+                <input type="text" id="mid_x" value="0"></br>
+                <label for="mid_y">Y:</label>
+                <input type="text" id="mid_y" value="30"></br>
+                <label for="mid_z">Z:</label>
+                <input type="text" id="mid_z" value="0">
             </td>
             <td class="value">
-                <label for="Third_x">X:</label>
-                <input type="text" id="Third_x" value="30"></br>
-                <label for="Third_y">Y:</label>
-                <input type="text" id="Third_y" value="0"></br>
-                <label for="Third_z">Z:</label>
-                <input type="text" id="Third_z" value="0">
+                <label for="right_x">X:</label>
+                <input type="text" id="right_x" value="30"></br>
+                <label for="right_y">Y:</label>
+                <input type="text" id="right_y" value="0"></br>
+                <label for="right_z">Z:</label>
+                <input type="text" id="right_z" value="0">
             </td>
         </tr>
         <tr>
             <td class="name">Color</td>
             <td class="value">
-                <label for="First_r">R:</label>
-                <input type="range" id="First_r" min="0" max="1" value="0.7" step="0.05" class="obj_controller"></br>
-                <label for="First_g">G:</label>
-                <input type="range" id="First_g" min="0" max="1" value="0.0" step="0.05" class="obj_controller"></br>
-                <label for="First_b">B:</label>
-                <input type="range" id="First_b" min="0" max="1" value="0.0" step="0.05" class="obj_controller">
+                <label for="left_r">R:</label>
+                <input type="range" id="left_r" min="0" max="1" value="0.7" step="0.05" class="obj_controller"></br>
+                <label for="left_g">G:</label>
+                <input type="range" id="left_g" min="0" max="1" value="0.0" step="0.05" class="obj_controller"></br>
+                <label for="left_b">B:</label>
+                <input type="range" id="left_b" min="0" max="1" value="0.0" step="0.05" class="obj_controller">
             </td>
             <td class="value">
-                <label for="Second_r">R:</label>
-                <input type="range" id="Second_r" min="0" max="1" value="0.0" step="0.05" class="obj_controller"></br>
-                <label for="Second_g">G:</label>
-                <input type="range" id="Second_g" min="0" max="1" value="0.7" step="0.05" class="obj_controller"></br>
-                <label for="Second_b">B:</label>
-                <input type="range" id="Second_b" min="0" max="1" value="0.0" step="0.05" class="obj_controller">
+                <label for="mid_r">R:</label>
+                <input type="range" id="mid_r" min="0" max="1" value="0.0" step="0.05" class="obj_controller"></br>
+                <label for="mid_g">G:</label>
+                <input type="range" id="mid_g" min="0" max="1" value="0.7" step="0.05" class="obj_controller"></br>
+                <label for="mid_b">B:</label>
+                <input type="range" id="mid_b" min="0" max="1" value="0.0" step="0.05" class="obj_controller">
             </td>
             <td class="value">
-                <label for="Third_r">R:</label>
-                <input type="range" id="Third_r" min="0" max="1" value="0.0" step="0.05" class="obj_controller"></br>
-                <label for="Third_g">G:</label>
-                <input type="range" id="Third_g" min="0" max="1" value="0.0" step="0.05" class="obj_controller"></br>
-                <label for="Third_b">B:</label>
-                <input type="range" id="Third_b" min="0" max="1" value="0.7" step="0.05" class="obj_controller">
+                <label for="right_r">R:</label>
+                <input type="range" id="right_r" min="0" max="1" value="0.0" step="0.05" class="obj_controller"></br>
+                <label for="right_g">G:</label>
+                <input type="range" id="right_g" min="0" max="1" value="0.0" step="0.05" class="obj_controller"></br>
+                <label for="right_b">B:</label>
+                <input type="range" id="right_b" min="0" max="1" value="0.7" step="0.05" class="obj_controller">
             </td>
         </tr>
         <tr>
             <td class="name">Brightness Jitter</td>
             <td class="value">
-                <label for="LeftMax">Max:</label>
-                <input type="range" id="LeftMax" min="0" max="1" value="0.5" step="0.05" class="obj_controller">
-                <label for="LeftMin">Min:</label>
-                <input type="range" id="LeftMin" min="0" max="1" value="0.5" step="0.05" class="obj_controller">
+                <label for="leftMax">Max:</label>
+                <input type="range" id="leftMax" min="0" max="1" value="0.5" step="0.05" class="obj_controller">
+                <label for="leftMin">Min:</label>
+                <input type="range" id="leftMin" min="0" max="1" value="0.5" step="0.05" class="obj_controller">
             </td>
             <td class="value">
-                <label for="MidMax">Max:</label>
-                <input type="range" id="MidMax" min="0" max="1" value="0.5" step="0.05" class="obj_controller">
-                <label for="MidMin">Min:</label>
-                <input type="range" id="MidMin" min="0" max="1" value="0.5" step="0.05" class="obj_controller">
+                <label for="midMax">Max:</label>
+                <input type="range" id="midMax" min="0" max="1" value="0.5" step="0.05" class="obj_controller">
+                <label for="midMin">Min:</label>
+                <input type="range" id="midMin" min="0" max="1" value="0.5" step="0.05" class="obj_controller">
             </td>
             <td class="value">
-                <label for="RightMax">Max:</label>
-                <input type="range" id="RightMax" min="0" max="1" value="0.5" step="0.05" class="obj_controller">
-                <label for="RightMin">Min:</label>
-                <input type="range" id="RightMin" min="0" max="1" value="0.5" step="0.05" class="obj_controller">
+                <label for="rightMax">Max:</label>
+                <input type="range" id="rightMax" min="0" max="1" value="0.5" step="0.05" class="obj_controller">
+                <label for="rightMin">Min:</label>
+                <input type="range" id="rightMin" min="0" max="1" value="0.5" step="0.05" class="obj_controller">
             </td>
         </tr>
         <!-- <tr>
