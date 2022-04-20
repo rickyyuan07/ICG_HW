@@ -14,7 +14,7 @@ body {
 
 .table1 { 
     border:1px solid #000; 
-    font-family: 微軟正黑體;
+    font-family: monospace;
     font-size:16px;
     width:600px;
     height:579.2px;
@@ -24,7 +24,7 @@ body {
 
 .table2 { 
     border:1px solid #000; 
-    font-family: 微軟正黑體;
+    font-family: monospace;
     font-size:16px;
     width:850px;
     text-align:center;
@@ -54,5 +54,5 @@ canvas {
 }
 
 .table_radio {
-    width:8%;
+    width:10%;
 }

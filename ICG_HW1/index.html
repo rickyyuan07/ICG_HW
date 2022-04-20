@@ -188,10 +188,10 @@
         var Y = [];
         var Z = [];
         var Size = [];
-        var lambdaY_onX = [];
-        var lambdaX_onY = [];
-        var lambdaX_onZ = [];
-        var lambdaY_onZ = [];
+        var DeltaY_onX = [];
+        var DeltaX_onY = [];
+        var DeltaX_onZ = [];
+        var DeltaY_onZ = [];
         var Shading = [];
         var checked = 0;
 
@@ -205,10 +205,10 @@
             X[i] = document.getElementById(`${idx2name[i]}X`).value;
             Y[i] = document.getElementById(`${idx2name[i]}Y`).value;
             Z[i] = document.getElementById(`${idx2name[i]}Z`).value;
-            lambdaY_onX[i] = document.getElementById(`${idx2name[i]}_lambday_x`).value;
-            lambdaX_onY[i] = document.getElementById(`${idx2name[i]}_lambdax_y`).value;
-            lambdaX_onZ[i] = document.getElementById(`${idx2name[i]}_lambdax_z`).value;
-            lambdaY_onZ[i] = document.getElementById(`${idx2name[i]}_lambday_z`).value;
+            DeltaY_onX[i] = document.getElementById(`${idx2name[i]}_Deltay_x`).value;
+            DeltaX_onY[i] = document.getElementById(`${idx2name[i]}_Deltax_y`).value;
+            DeltaX_onZ[i] = document.getElementById(`${idx2name[i]}_Deltax_z`).value;
+            DeltaY_onZ[i] = document.getElementById(`${idx2name[i]}_Deltay_z`).value;
             Shading[i] = document.getElementById(`shading${idx2name[i]}`).value;
 
             JitterMax[i] = Number(document.getElementById(`${idx2name[i]}Max`).value);
@@ -231,9 +231,9 @@
             
             var shearMat = mat4.create();
             mat4.set(
-                [1.0, lambdaY_onX[i], 0.0, 0.0,
-                lambdaX_onY[i], 1.0, 0.0, 0.0,
-                lambdaX_onZ[i], lambdaY_onZ[i], 1.0, 0.0,
+                [1.0, DeltaY_onX[i], 0.0, 0.0,
+                DeltaX_onY[i], 1.0, 0.0, 0.0,
+                DeltaX_onZ[i], DeltaY_onZ[i], 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0],
                 shearMat
             )
@@ -298,14 +298,7 @@
             brightnessRatio = Math.abs((timeNow%(jitterPeriod * 1000) - (jitterPeriod * 500)) / (jitterPeriod * 500))
             var elapsed = timeNow - lastTime;
             for(var i = 0; i < 3; ++i){
-                var dir = document.getElementsByName(`${idx2name[i]}Dir`);
-                for(j = 0; j < dir.length; j++) {
-                    if(dir[j].type="radio") {
-                        if(dir[j].checked)
-                            checked = dir[j].value;
-                    }
-                }
-                Angle[i] += checked * Speed[i] * elapsed / 100;
+                Angle[i] += Speed[i] * elapsed / 100;
             }
         }
         
@@ -360,6 +353,7 @@
                   <option value="Plant">Plant</option>
                   <option value="Teapot">Teapot</option>
                   <option value="Tomcat">Tomcat</option>
+                  <option value="paramid">paramid</option>
                 </select>
             </td>
             <td class="name">
@@ -377,6 +371,7 @@
                     <option value="Plant">Plant</option>
                     <option value="Teapot">Teapot</option>
                     <option value="Tomcat">Tomcat</option>
+                    <option value="paramid">box</option>
                 </select>
             </td>
             <td class="name">
@@ -394,6 +389,7 @@
                     <option value="Plant">Plant</option>
                     <option value="Teapot">Teapot</option>
                     <option value="Tomcat">Tomcat</option>
+                    <option value="box">box</option>
                 </select>
             </td>
         </tr>
@@ -404,7 +400,7 @@
                   <option value="1">Gouraud Shading</option>
                   <option value="2">Phong Shading</option>
                   <option value="3">Flat Shading</option>
-                  <option value="4">Cel Shading</option>
+                  <option value="4">Cartoon Shading</option>
                 </select>
             </td>
             <td class="value radios">
@@ -412,7 +408,7 @@
                   <option value="1">Gouraud Shading</option>
                   <option value="2">Phong Shading</option>
                   <option value="3">Flat Shading</option>
-                  <option value="4">Cel Shading</option>
+                  <option value="4">Cartoon Shading</option>
                 </select>
             </td>
             <td class="value radios">
@@ -420,7 +416,7 @@
                   <option value="1">Gouraud Shading</option>
                   <option value="2">Phong Shading</option>
                   <option value="3">Flat Shading</option>
-                  <option value="4">Cel Shading</option>
+                  <option value="4">Cartoon Shading</option>
                 </select>
             </td>
         </tr>
@@ -475,97 +471,64 @@
         <tr>
             <td class="name">Shear Along X-Axis</td>
             <td class="value">
-                <label for="left_lambday_x">Lambda Y:</label>
-                <input type="number" id="left_lambday_x" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <label for="left_Deltay_x">Delta Y:</label>
+                <input type="number" id="left_Deltay_x" name="quantity" min="-3" max="3" value="0" step="0.2">
             </td>
             <td class="value">
-                <label for="mid_lambday_x">Lambda Y:</label>
-                <input type="number" id="mid_lambday_x" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <label for="mid_Deltay_x">Delta Y:</label>
+                <input type="number" id="mid_Deltay_x" name="quantity" min="-3" max="3" value="0" step="0.2">
             </td>
             <td class="value">
-                <label for="right_lambday_x">Lambda Y:</label>
-                <input type="number" id="right_lambday_x" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <label for="right_Deltay_x">Delta Y:</label>
+                <input type="number" id="right_Deltay_x" name="quantity" min="-3" max="3" value="0" step="0.2">
             </td>
         </tr>
         <tr>
             <td class="name">Shear Along Y-Axis</td>
             <td class="value">
-                <label for="left_lambdax_y">Lambda X:</label>
-                <input type="number" id="left_lambdax_y" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <label for="left_Deltax_y">Delta X:</label>
+                <input type="number" id="left_Deltax_y" name="quantity" min="-3" max="3" value="0" step="0.2">
             </td>
             <td class="value">
-                <label for="mid_lambdax_y">Lambda X:</label>
-                <input type="number" id="mid_lambdax_y" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <label for="mid_Deltax_y">Delta X:</label>
+                <input type="number" id="mid_Deltax_y" name="quantity" min="-3" max="3" value="0" step="0.2">
             </td>
             <td class="value">
-                <label for="right_lambdax_y">Lambda X:</label>
-                <input type="number" id="right_lambdax_y" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <label for="right_Deltax_y">Delta X:</label>
+                <input type="number" id="right_Deltax_y" name="quantity" min="-3" max="3" value="0" step="0.2">
             </td>
         </tr>
         <tr>
             <td class="name">Shear Along Z-Axis</td>
             <td class="value">
-                <label for="left_lambdax_z">Lambda X:</label>
-                <input type="number" id="left_lambdax_z" name="quantity" min="-3" max="3" value="0" step="0.2">
-                <label for="left_lambday_z">Lambda Y:</label>
-                <input type="number" id="left_lambday_z" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <label for="left_Deltax_z">Delta X:</label>
+                <input type="number" id="left_Deltax_z" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <label for="left_Deltay_z">Delta Y:</label>
+                <input type="number" id="left_Deltay_z" name="quantity" min="-3" max="3" value="0" step="0.2">
             </td>
             <td class="value">
-                <label for="mid_lambdax_z">Lambda X:</label>
-                <input type="number" id="mid_lambdax_z" name="quantity" min="-3" max="3" value="0" step="0.2">
-                <label for="mid_lambday_z">Lambda Y:</label>
-                <input type="number" id="mid_lambday_z" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <label for="mid_Deltax_z">Delta X:</label>
+                <input type="number" id="mid_Deltax_z" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <label for="mid_Deltay_z">Delta Y:</label>
+                <input type="number" id="mid_Deltay_z" name="quantity" min="-3" max="3" value="0" step="0.2">
             </td>
             <td class="value">
-                <label for="right_lambdax_z">Lambda X:</label>
-                <input type="number" id="right_lambdax_z" name="quantity" min="-3" max="3" value="0" step="0.2">
-                <label for="right_lambday_z">Lambda Y:</label>
-                <input type="number" id="right_lambday_z" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <label for="right_Deltax_z">Delta X:</label>
+                <input type="number" id="right_Deltax_z" name="quantity" min="-3" max="3" value="0" step="0.2">
+                <label for="right_Deltay_z">Delta Y:</label>
+                <input type="number" id="right_Deltay_z" name="quantity" min="-3" max="3" value="0" step="0.2">
             </td>
         </tr>
         <tr>
-            <td class="name">Rotate Speed</td>
+            <td class="name">Rotate Speed & Direction</td>
             <td class="value">
-                <input type="range" min="0" max="40" value="3" class="obj_controller" id="leftSpinSpeed">
-            </td>
-            <td class="value">
-                <input type="range" min="0" max="40" value="3" class="obj_controller" id="midSpinSpeed">
+                <input type="range" min="-40" max="40" value="3" class="obj_controller" id="leftSpinSpeed">
             </td>
             <td class="value">
-                <input type="range" min="0" max="40" value="3" class="obj_controller" id="rightSpinSpeed">
+                <input type="range" min="-40" max="40" value="3" class="obj_controller" id="midSpinSpeed">
             </td>
-        </tr>
-        <tr>
-            <td class="name">Rotate Direction</td>
-            <td class="value radios">
-                <div>
-                    <input type="radio" id="clocleft" name="leftDir" value="-1" class="table_radio">
-                    <label for="clocleft">Clockwise</label>
-                </div>
-                <div>
-                    <input type="radio" id="counterleft" name="leftDir" value="1" checked class="table_radio">
-                    <label for="counterleft">Counterclockwise</label>
-                </div>
-            </td>
-            <td class="value radios">
-                <div>
-                    <input type="radio" id="clockmid" name="midDir" value="-1" class="table_radio">
-                    <label for="clockmid">Clockwise</label>
-                </div>
-                <div>
-                    <input type="radio" id="countermid" name="midDir" value="1" checked class="table_radio">
-                    <label for="countermid">Counterclockwise</label>
-                </div>
-            </td>
-            <td class="value radios">
-                <div>
-                    <input type="radio" id="clockRight" name="rightDir" value="-1" class="table_radio">
-                    <label for="clockRight">Clockwise</label>
-                </div>
-                <div>
-                    <input type="radio" id="counterRight" name="rightDir" value="1" checked class="table_radio">
-                    <label for="counterRight">Counterclockwise</label>
-                </div>
+            <td class="value">
+                <input type="range" min="-40" max="40" value="3" class="obj_controller" id="rightSpinSpeed">
             </td>
         </tr>
     </table>
@@ -651,15 +614,6 @@
                 <input type="range" id="rightMin" min="0" max="1" value="0.5" step="0.05" class="obj_controller">
             </td>
         </tr>
-        <!-- <tr>
-            <td class="name">Clipping Z</td>
-            <td class="value">
-                <input type="range" min="0.1" max="100" value="100" class="obj_controller" id="clipMax">
-            </td>
-            <td class="value">
-                <input type="range" min="0.1" max="100" value="0.1" class="obj_controller" id="clipMin">
-            </td>
-        </tr> -->
     </table>
 </div>
 </body>
